@@ -97,6 +97,8 @@ fn main() -> Result<()> {
         let encoded = model.forward(&token_ids, None, false, false)?;
 
         println!("Writing Contact Map (todo).......");
+        let cmap = encoded.get_contact_map();
+        println!("Contact Map: {:?}", cmap);
 
         println!("Writing Logits as Parquet.......");
 
