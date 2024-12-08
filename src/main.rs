@@ -94,7 +94,7 @@ fn main() -> Result<()> {
 
         let token_ids = Tensor::new(&tokens[..], device)?.unsqueeze(0)?;
         println!("Encoding.......");
-        let encoded = model.forward(&token_ids, None, false, false)?;
+        let encoded = model.forward(&token_ids, None, false, true)?;
 
         println!("Writing Contact Map (todo).......");
         let cmap = encoded.get_contact_map();
