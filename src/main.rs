@@ -5,6 +5,7 @@ use candle_hf_hub::{api::sync::Api, Repo, RepoType};
 use candle_nn::VarBuilder;
 use clap::Parser;
 use ferritin_amplify::{AMPLIFYConfig as Config, AMPLIFY};
+use plm_local::plm_local::parquet::ToParquet;
 use tokenizers::Tokenizer;
 
 pub const DTYPE: DType = DType::F32;
@@ -94,6 +95,10 @@ fn main() -> Result<()> {
         let token_ids = Tensor::new(&tokens[..], device)?.unsqueeze(0)?;
         println!("Encoding.......");
         let encoded = model.forward(&token_ids, None, false, false)?;
+
+        println!("Writing Contact Map (todo).......");
+
+        println!("Writing Logits as Parquet.......");
 
         println!("Predicting.......");
         let predictions = encoded.logits.argmax(D::Minus1)?;
