@@ -1,0 +1,10 @@
+[project]
+authors = ["Zachary Charlop-Powers <zach.charlop.powers@gmail.com>"]
+channels = ["conda-forge"]
+description = "Running protein-language models from your own machine."
+name = "plm-local"
+platforms = ["osx-arm64"]
+version = "0.1.0"
+
+[dependencies]
+rattler-build = ">=0.31.1,<0.32"

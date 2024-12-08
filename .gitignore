@@ -1,3 +1,7 @@
 target/
 output/
 Cargo.lock
+
+# pixi environments
+.pixi
+*.egg-info
