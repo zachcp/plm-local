@@ -46,7 +46,7 @@ jobs:
         run: |
           rattler-build build --recipe-dir . \
             --skip-existing=all --target-platform=${{ matrix.target }} \
-            -c conda-forge -c https://prefix.dev/protein-language-models
+            -c conda-forge -c https://prefix.dev/protein-language-local-public
 
       - name: Upload all packages
         shell: bash
@@ -55,5 +55,5 @@ jobs:
         run: |
           # uses trusted publishers for the upload
           for file in output/**/*.conda; do
-            rattler-build upload prefix -c protein-language-models "$file"
+            rattler-build upload prefix -c protein-language-local-public "$file"
           done
