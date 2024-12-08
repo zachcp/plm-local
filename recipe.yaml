@@ -20,7 +20,7 @@ requirements:
 
 tests:
   - script:
-      - cargo-upgrade --help # !(2)
+      - plm-local --help
 
 about:
   homepage: https://github.com/zachcp/plm-local
