@@ -1,0 +1,32 @@
+context:
+  version: "0.1.0"
+
+package:
+  name: plm-local
+  version: ${{ version }}
+
+source:
+  path: .
+
+build:
+  script:
+    - cargo-bundle-licenses --format yaml --output ${SRC_DIR}/THIRDPARTY.yml  # !(1)
+    - $BUILD_PREFIX/bin/cargo install --locked --bins --root ${PREFIX} --path .
+
+requirements:
+  build:
+    - ${{ compiler('rust') }}
+    - cargo-bundle-licenses
+
+tests:
+  - script:
+      - cargo-upgrade --help # !(2)
+
+about:
+  homepage: https://github.com/zachcp/plm-local
+  license: MIT
+  license_file:
+    - LICENSE
+    - THIRDPARTY.yml
+  description: "Useful protein lanauge models on your machine."
+  summary: "Run protein language models from the Command line."
