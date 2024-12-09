@@ -26,17 +26,31 @@ pub fn device(cpu: bool) -> Result<Device> {
     }
 }
 
-pub trait ToParquet {
-    fn top_hits(&self) -> Result<DataFrame>;
-    fn contacts(&self) -> Result<DataFrame>;
+#[derive(Default)]
+enum OutputType {
+    #[default]
+    CSV,
+    PARQUET,
 }
 
-impl ToParquet for ModelOutput {
-    fn top_hits(&self) -> Result<DataFrame> {
+#[derive(Default)]
+pub struct OutputConfig {
+    pub contact_output: OutputType,
+    pub top_k_output: OutputType,
+}
+
+pub trait ModelIO {
+    fn generate_contacts(&self, config: OutputConfig) -> Result<DataFrame>;
+    fn top_hits(&self,OutputConfig) -> Result<DataFrame>;
+    fn to_disk(&self,OutputConfig);
+}
+
+impl ModelIO for ModelOutput {
+    fn top_hits(&self, OutputConfig) -> Result<DataFrame> {
         // let predictions = self.logits.argmax(D::Minus1)?;
         todo!("Need to think through the API a bit");
     }
-    fn contacts(&self) -> Result<DataFrame> {
+    fn generate_contacts(&self, OutputConfig) -> Result<DataFrame> {
         let apc = self.get_contact_map()?;
         if apc.is_none() {
             Ok(DataFrame::empty())
@@ -64,6 +78,7 @@ impl ToParquet for ModelOutput {
             Ok(df)
         }
     }
+    fn to_disk(&self, OutputConfig) {}
 }
 
 #[cfg(test)]

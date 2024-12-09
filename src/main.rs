@@ -4,7 +4,9 @@ use candle_hf_hub::{api::sync::Api, Repo, RepoType};
 use candle_nn::VarBuilder;
 use clap::Parser;
 use ferritin_amplify::{AMPLIFYConfig as Config, AMPLIFY};
-use plm_local::{device, ToParquet};
+use plm_local::{device, ModelIO, OutputConfig};
+use polars::io::parquet::*;
+use polars::prelude::*;
 use tokenizers::Tokenizer;
 
 pub const DTYPE: DType = DType::F32;
@@ -86,7 +88,7 @@ fn main() -> Result<()> {
         ));
     };
 
-    // defualt is datetime-model
+    // default is datetime-model
     let output_dir = args.output_dir.unwrap_or_else(|| {
         let now = chrono::Local::now();
         let dirname = format!("{}_{}", now.format("%Y%m%d_%H%M%S"), args.model_id);
@@ -113,7 +115,15 @@ fn main() -> Result<()> {
         // 350M: Contact Map: Ok(Some(Tensor[dims 254, 254, 480; f32, metal:4294969344]))
         // 120M: Contact Map: Ok(Some(Tensor[dims 254, 254, 240; f32, metal:4294969344]))
         // Lets take the max() of the Softmax values....
-        let cmap2 = encoded.contacts()?;
+        let mut cmap2 = encoded.contacts()?;
+        std::fs::create_dir_all(&output_dir)?;
+        let contact_map_file = output_dir.join("contact_map.parquet");
+        let contact_map_csv = output_dir.join("contact_map.csv");
+        let mut file = std::fs::File::create(contact_map_file).unwrap();
+        ParquetWriter::new(&mut file).finish(&mut cmap2).unwrap();
+        let mut file = std::fs::File::create(contact_map_csv).unwrap();
+        CsvWriter::new(&mut file).finish(&mut cmap2).unwrap();
+
         println!("DataFrame: {:?}", cmap2);
 
         println!("Writing Logits as Parquet.......");
