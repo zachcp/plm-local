@@ -99,6 +99,7 @@ fn main() -> Result<()> {
             top_k_output: OutputType::CSV,
             sequence: prot.clone(),
             outdir: output_dir.clone(),
+            tokenizer: tokenizer.clone(),
         };
 
         let tokens = tokenizer

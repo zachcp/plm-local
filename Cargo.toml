@@ -1,5 +1,6 @@
 [package]
 name = "plm-local"
+version = "0.1.1"
 edition = "2021"
 authors = ["Zach Charlop-Powers<zach.charlop.powers@gmail.com>"]
 description = "Local LLMs for Proteins"

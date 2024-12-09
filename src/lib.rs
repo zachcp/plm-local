@@ -5,6 +5,7 @@ use ferritin_amplify::ModelOutput;
 use polars::io::parquet::*;
 use polars::prelude::*;
 use polars::prelude::{df, CsvWriter, DataFrame, ParquetWriter};
+use tokenizers::Tokenizer;
 
 pub fn device(cpu: bool) -> Result<Device> {
     if cpu {
@@ -28,19 +29,17 @@ pub fn device(cpu: bool) -> Result<Device> {
     }
 }
 
-#[derive(Default)]
 pub enum OutputType {
-    #[default]
     CSV,
     PARQUET,
 }
 
-#[derive(Default)]
 pub struct OutputConfig {
     pub contact_output: OutputType,
     pub top_k_output: OutputType,
     pub sequence: String,
     pub outdir: String,
+    pub tokenizer: Tokenizer,
 }
 
 pub trait ModelIO {
@@ -106,13 +105,23 @@ impl ModelIO for ModelOutput {
             }
         }
 
-        // println!("Writing Contact Parquet File");
-        // println!("Predicting.......");
-        // let predictions = encoded.logits.argmax(D::Minus1)?;
-        // println!("Decoding.......");
-        // let indices: Vec<u32> = predictions.to_vec2()?[0].to_vec();
-        // let decoded = tokenizer.decode(indices.as_slice(), true);
-        // println!("Decoded: {:?}, ", decoded);
+        println!("Writing Top Output...");
+        let predictions = self.logits.argmax(D::Minus1)?;
+        let indices: Vec<u32> = predictions.to_vec2()?[0].to_vec();
+        let decoded = config
+            .tokenizer
+            .decode(indices.as_slice(), true)
+            .map_err(|e| anyhow::anyhow!("{}", e))?;
+        // std::fs::write(&decoded_path, &decoded)?;
+        // let decoded = &config.tokenizer.decode(indices.as_slice(), true)?;
+        // println!("Decoded: {:?}", decoded);
+
+        let decoded_path = outdir.join("decoded.txt");
+        std::fs::write(&decoded_path, decoded)?;
+
+        println!("Writing Sequence...");
+        let sequence_path = outdir.join("sequence.txt");
+        std::fs::write(&sequence_path, &config.sequence)?;
 
         Ok(())
     }
