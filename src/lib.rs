@@ -2,7 +2,6 @@ use anyhow::Result;
 use candle_core::utils::{cuda_is_available, metal_is_available};
 use candle_core::{Device, D};
 use ferritin_amplify::ModelOutput;
-use polars::io::parquet::*;
 use polars::prelude::*;
 use polars::prelude::{df, CsvWriter, DataFrame, ParquetWriter};
 use tokenizers::Tokenizer;
