@@ -1,5 +1,5 @@
 use anyhow::Result;
-use candle_core::{Tensor, D};
+use candle_core::D;
 use ferritin_amplify::ModelOutput;
 use polars::prelude::{df, DataFrame};
 
