@@ -99,10 +99,15 @@ fn main() -> Result<()> {
         println!("Writing Contact Map (todo).......");
         let cmap = encoded.get_contact_map();
         println!("Contact Map: {:?}", cmap);
-        // Contact Map: Ok(Some(Tensor[dims 254, 254, 480; f32, metal:4294969344]))
-        //  extra dimension....
+        // Validated the pytorch/python AMPLIFY model has the same dims...
+        // 350M: Contact Map: Ok(Some(Tensor[dims 254, 254, 480; f32, metal:4294969344]))
+        // 120M: Contact Map: Ok(Some(Tensor[dims 254, 254, 240; f32, metal:4294969344]))
+        // Lets take the max() of the Softmax values....
+
+        let cmap2 = encoded.contacts()?;
 
         println!("Writing Logits as Parquet.......");
+        println!("DataFrame: {:?}", cmap2);
 
         println!("Predicting.......");
         let predictions = encoded.logits.argmax(D::Minus1)?;
