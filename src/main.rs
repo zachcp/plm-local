@@ -99,6 +99,8 @@ fn main() -> Result<()> {
         println!("Writing Contact Map (todo).......");
         let cmap = encoded.get_contact_map();
         println!("Contact Map: {:?}", cmap);
+        // Contact Map: Ok(Some(Tensor[dims 254, 254, 480; f32, metal:4294969344]))
+        //  extra dimension....
 
         println!("Writing Logits as Parquet.......");
 
