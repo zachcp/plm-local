@@ -2,7 +2,9 @@ use anyhow::Result;
 use candle_core::utils::{cuda_is_available, metal_is_available};
 use candle_core::{Device, D};
 use ferritin_amplify::ModelOutput;
-use polars::prelude::{df, DataFrame};
+use polars::io::parquet::*;
+use polars::prelude::*;
+use polars::prelude::{df, CsvWriter, DataFrame, ParquetWriter};
 
 pub fn device(cpu: bool) -> Result<Device> {
     if cpu {
@@ -27,7 +29,7 @@ pub fn device(cpu: bool) -> Result<Device> {
 }
 
 #[derive(Default)]
-enum OutputType {
+pub enum OutputType {
     #[default]
     CSV,
     PARQUET,
@@ -37,20 +39,22 @@ enum OutputType {
 pub struct OutputConfig {
     pub contact_output: OutputType,
     pub top_k_output: OutputType,
+    pub sequence: String,
+    pub outdir: String,
 }
 
 pub trait ModelIO {
-    fn generate_contacts(&self, config: OutputConfig) -> Result<DataFrame>;
-    fn top_hits(&self,OutputConfig) -> Result<DataFrame>;
-    fn to_disk(&self,OutputConfig);
+    fn generate_contacts(&self, config: &OutputConfig) -> Result<DataFrame>;
+    fn top_hits(&self, config: &OutputConfig) -> Result<DataFrame>;
+    fn to_disk(&self, config: &OutputConfig) -> Result<()>;
 }
 
 impl ModelIO for ModelOutput {
-    fn top_hits(&self, OutputConfig) -> Result<DataFrame> {
+    fn top_hits(&self, config: &OutputConfig) -> Result<DataFrame> {
         // let predictions = self.logits.argmax(D::Minus1)?;
         todo!("Need to think through the API a bit");
     }
-    fn generate_contacts(&self, OutputConfig) -> Result<DataFrame> {
+    fn generate_contacts(&self, config: &OutputConfig) -> Result<DataFrame> {
         let apc = self.get_contact_map()?;
         if apc.is_none() {
             Ok(DataFrame::empty())
@@ -78,7 +82,40 @@ impl ModelIO for ModelOutput {
             Ok(df)
         }
     }
-    fn to_disk(&self, OutputConfig) {}
+    fn to_disk(&self, config: &OutputConfig) -> Result<()> {
+        // Validated the pytorch/python AMPLIFY model has the same dims...
+        // 350M: Contact Map: Ok(Some(Tensor[dims 254, 254, 480; f32, metal:4294969344]))
+        // 120M: Contact Map: Ok(Some(Tensor[dims 254, 254, 240; f32, metal:4294969344]))
+        // Lets take the max() of the Softmax values....
+
+        let mut contacts = self.generate_contacts(config)?;
+
+        println!("Writing Contact Parquet File");
+        std::fs::create_dir_all(&config.outdir)?;
+        let outdir = std::path::PathBuf::from(&config.outdir);
+        match &config.contact_output {
+            OutputType::CSV => {
+                let contact_map_file = outdir.join("contact_map.csv");
+                let mut file = std::fs::File::create(&contact_map_file)?;
+                CsvWriter::new(&mut file).finish(&mut contacts)?;
+            }
+            OutputType::PARQUET => {
+                let contact_map_file = outdir.join("contact_map.parquet");
+                let mut file = std::fs::File::create(&contact_map_file)?;
+                ParquetWriter::new(&mut file).finish(&mut contacts)?;
+            }
+        }
+
+        // println!("Writing Contact Parquet File");
+        // println!("Predicting.......");
+        // let predictions = encoded.logits.argmax(D::Minus1)?;
+        // println!("Decoding.......");
+        // let indices: Vec<u32> = predictions.to_vec2()?[0].to_vec();
+        // let decoded = tokenizer.decode(indices.as_slice(), true);
+        // println!("Decoded: {:?}, ", decoded);
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
