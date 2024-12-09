@@ -1,6 +1,8 @@
 # plm-local
 
 
+Local-first protein languge models.  WIP.
+
 
 ```shell
 cargo run --release \
