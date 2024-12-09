@@ -5,7 +5,7 @@ use candle_hf_hub::{api::sync::Api, Repo, RepoType};
 use candle_nn::VarBuilder;
 use clap::Parser;
 use ferritin_amplify::{AMPLIFYConfig as Config, AMPLIFY};
-use plm_local::plm_local::parquet::ToParquet;
+use plm_local::ToParquet;
 use tokenizers::Tokenizer;
 
 pub const DTYPE: DType = DType::F32;
@@ -103,11 +103,10 @@ fn main() -> Result<()> {
         // 350M: Contact Map: Ok(Some(Tensor[dims 254, 254, 480; f32, metal:4294969344]))
         // 120M: Contact Map: Ok(Some(Tensor[dims 254, 254, 240; f32, metal:4294969344]))
         // Lets take the max() of the Softmax values....
-
         let cmap2 = encoded.contacts()?;
+        println!("DataFrame: {:?}", cmap2);
 
         println!("Writing Logits as Parquet.......");
-        println!("DataFrame: {:?}", cmap2);
 
         println!("Predicting.......");
         let predictions = encoded.logits.argmax(D::Minus1)?;

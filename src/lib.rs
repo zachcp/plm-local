@@ -1,5 +1,3 @@
-pub mod plm_local;
-
 use anyhow::Result;
 use candle_core::{Tensor, D};
 use ferritin_amplify::ModelOutput;
